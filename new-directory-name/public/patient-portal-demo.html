@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agama Patient Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 0;
+    }
+
+    .greeting {
+      text-align: center;
+      font-size: 2em;
+      margin: 20px 0;
+      color: #00b2cc;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background-color: #1e1e1e;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      padding: 20px;
+      color: #e0e0e0;
+      box-shadow: none;
+    }
+
+    .card h2 {
+      color: #00b2cc;
+      margin-top: 0;
+    }
+
+    .card p {
+      margin-bottom: 0.5em;
+    }
+
+    .form-group {
+      margin-bottom: 1.5em;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5em;
+      color: #00b2cc;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #333;
+      border-radius: 5px;
+      font-size: 1em;
+      background-color: #333;
+      color: #e0e0e0;
+      box-shadow: none;
+    }
+
+    .btn {
+      background-color: #00b2cc;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+      box-shadow: none;
+    }
+
+    .btn:hover {
+      background-color: rgba(0, 178, 204, 0.8);
+    }
+
+    .footer {
+      color: #00b2cc;
+      text-align: center;
+      padding: 5px 0;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+    }
+
+    .footer p {
+      background-color: transparent;
+      font-size: 0.8em;
+    }
+
+    .footer-link {
+      color: #00b2cc;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    .footer-link:hover {
+      text-decoration: underline;
+    }
+
+    .chat-box {
+      border-top: 1px solid #333;
+      padding-top: 20px;
+      margin-top: 20px;
+    }
+
+    .chat-box h3 {
+      color: #00b2cc;
+    }
+
+    .collapsible {
+      background-color: #00b2cc;
+      color: #fff;
+      cursor: pointer;
+      padding: 10px;
+      width: 100%;
+      border: none;
+      text-align: left;
+      outline: none;
+      font-size: 1em;
+      border-radius: 5px;
+      box-shadow: none;
+    }
+
+    .active,
+    .collapsible:hover {
+      background-color: rgba(0, 178, 204, 0.8);
+    }
+
+    .collapsible-content {
+      padding: 0;
+      display: none;
+      overflow: hidden;
+      background-color: transparent;
+      border-radius: 0;
+      margin-top: 10px;
+      box-shadow: none;
+    }
+
+    .sync-btn {
+      background-color: #00b2cc;
+      color: #fff;
+      padding: 5px 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.5em;
+      margin-left: 10px;
+      box-shadow: none;
+    }
+
+    .sync-btn:hover {
+      background-color: rgba(0, 178, 204, 0.8);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      color: #e0e0e0;
+    }
+
+    table,
+    th,
+    td {
+      border: 1px solid #333;
+      box-shadow: none;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #00b2cc;
+      color: #fff;
+    }
+
+    .chat-box form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-box textarea {
+      width: calc(100% - 20px);
+      margin-top: 10px;
+      box-shadow: none;
+    }
+  </style>
+</head>
+
+<body>
+<div class="greeting" id="greeting">
+  Hello, Welcome to Your Health Journey!
+</div>
+
+
+<div class="container">
+  <div class="card">
+    <button type="button" class="collapsible">Update My Information</button>
+    <div class="collapsible-content">
+      <form id="infoForm">
+        <div class="form-group">
+          <label for="patientName">Name</label>
+          <input type="text" id="patientName" name="patientName" placeholder="Enter your name" required>
+        </div>
+        <div class="form-group">
+          <label for="patientEmail">Email</label>
+          <input type="email" id="patientEmail" name="patientEmail" placeholder="Enter your email" required>
+        </div>
+        <div class="form-group">
+          <label for="patientPhone">Phone</label>
+          <input type="tel" id="patientPhone" name="patientPhone" placeholder="Enter your phone number" required>
+        </div>
+        <div class="form-group">
+          <label for="patientDOB">Date of Birth</label>
+          <input type="date" id="patientDOB" name="patientDOB" required>
+        </div>
+        <div class="form-group">
+          <label for="patientAddress">Address</label>
+          <textarea id="patientAddress" name="patientAddress" rows="4" placeholder="Enter your address" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="insuranceProvider">Insurance Provider</label>
+          <input type="text" id="insuranceProvider" name="insuranceProvider" placeholder="Enter your insurance provider" required>
+        </div>
+        <div class="form-group">
+          <label for="policyNumber">Policy Number</label>
+          <input type="text" id="policyNumber" name="policyNumber" placeholder="Enter your policy number" required>
+        </div>
+        <div class="form-group">
+          <label for="policyHolderName">Policy Holder Name</label>
+          <input type="text" id="policyHolderName" name="policyHolderName" placeholder="Enter policy holder name" required>
+        </div>
+        <button type="submit" class="btn">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <button type="button" class="collapsible">Appointment Scheduling</button>
+    <div class="collapsible-content">
+      <form id="appointmentForm">
+        <div class="form-group">
+          <label for="appointmentSelector">Select Appointment</label>
+          <select id="appointmentSelector" name="appointmentSelector">
+            <option value="new">Add New Appointment</option>
+            <!-- Existing appointments will be added here dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="appointmentType">Type of Appointment</label>
+          <select id="appointmentType" name="appointmentType" required>
+            <option value="general">General Checkup</option>
+            <option value="specialist">Specialist Consultation</option>
+            <option value="followup">Follow-Up</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="appointmentDate">Preferred Date</label>
+          <input type="date" id="appointmentDate" name="appointmentDate" required>
+        </div>
+        <div class="form-group">
+          <label for="appointmentTime">Preferred Time</label>
+          <input type="time" id="appointmentTime" name="appointmentTime" required>
+        </div>
+        <div class="form-group">
+          <label for="requestedPhysician">Requested Physician</label>
+          <input type="text" id="requestedPhysician" name="requestedPhysician" placeholder="Enter the physician's name" required>
+        </div>
+        <button type="submit" class="btn">Schedule Appointment</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Your Health Records</h2>
+    <button class="btn">View Health Records</button>
+    <button class="btn">Add New Records</button>
+    <button class="btn">Save My Records</button>
+  </div>
+
+  <div class="card">
+    <h2>
+      Personal Medical Journal
+      <button class="sync-btn">Sync & Update with my EMR</button>
+    </h2>
+    <p>Your Personal Medical Journal is your key to keeping your health and your provider up to date without the hassle of paperwork and time spent updating your provider in person. Allowing your physician to provide the most focused, targeted and quality care for you. Just press the Sync Button & the Agama AI will take care of the rest!</p>
+    <form id="journalForm">
+      <div class="form-group" style="margin-top: 30px;">
+        <label for="journalDate">Entry Date</label>
+        <input type="date" id="journalDate" name="journalDate" required>
+      </div>
+      <div class="form-group">
+        <label for="journalEntry">Journal Entry</label>
+        <textarea id="journalEntry" name="journalEntry" rows="4" placeholder="Write your journal entry here" required></textarea>
+      </div>
+      <button type="submit" class="btn">Add Entry</button>
+    </form>
+    <button type="button" class="collapsible" style="margin-top: 20px;">Previous Journal Entries</button>
+    <div class="collapsible-content" id="previousEntriesContainer">
+      <!-- Previous journal entries will be added here dynamically -->
+    </div>
+  </div>
+
+  <div class="card">
+    <button type="button" class="collapsible">Notifications and Updates</button>
+    <div class="collapsible-content" id="notificationsContainer">
+      <!-- Notifications will be dynamically added here -->
+    </div>
+  </div>
+
+
+  <div class="card">
+    <button type="button" class="collapsible">Medications</button>
+    <div class="collapsible-content">
+      <h3>Active Medications</h3>
+      <table>
+        <tr>
+          <th>Medication Name</th>
+          <th>Dose</th>
+          <th>Refill Dates</th>
+          <th>Prescriber</th>
+          <th>Reason for Prescription</th>
+          <th>Warning Info</th>
+          <th>Instructions for Taking</th>
+          <th>Frequency (Times per Day)</th>
+        </tr>
+        <tr>
+          <td>Aspirin</td>
+          <td>81mg</td>
+          <td>2024-07-01</td>
+          <td>Dr. Smith</td>
+          <td>Heart Health</td>
+          <td>May cause stomach upset</td>
+          <td>Take with food</td>
+          <td>1</td>
+        </tr>
+      </table>
+
+      <h3>Past Medications</h3>
+      <table>
+        <tr>
+          <th>Medication Name</th>
+          <th>Dose</th>
+          <th>Refill Dates</th>
+          <th>Prescriber</th>
+          <th>Reason for Prescription</th>
+          <th>Warning Info</th>
+          <th>Instructions for Taking</th>
+          <th>Frequency (Times per Day)</th>
+        </tr>
+        <tr>
+          <td>Ibuprofen</td>
+          <td>200mg</td>
+          <td>2024-06-01</td>
+          <td>Dr. Jones</td>
+          <td>Pain Relief</td>
+          <td>May cause drowsiness</td>
+          <td>Take with water</td>
+          <td>As needed</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="card chat-box">
+    <h3>Chat with Agama AI - Your Health Education</h3>
+    <form id="chatForm">
+      <div class="form-group">
+        <label for="chatTopic">Select a Topic</label>
+        <select id="chatTopic" name="chatTopic" required>
+          <option value="general">General Inquiry</option>
+          <option value="preconsult">Pre-Consult Information</option>
+          <option value="treatment">Treatment Plans</option>
+          <option value="alerts">Health Alerts</option>
+        </select>
+      </div>
+      <textarea id="chatMessage" name="chatMessage" rows="4" placeholder="Type your message here" required></textarea>
+      <button type="submit" class="btn">Send Message</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <button type="button" class="collapsible">Settings-Privacy Control</button>
+    <div class="collapsible-content">
+      <form id="settingsForm">
+        <div class="form-group">
+          <label for="emrAccess">Who can access your EMR?</label>
+          <select id="emrAccess" name="emrAccess" required>
+            <option value="provider">Only my healthcare provider</option>
+            <option value="family">My healthcare provider and family members</option>
+            <option value="anyone">Anyone with the link</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="journalAccess">Who can access your Personal Medical Journal?</label>
+          <select id="journalAccess" name="journalAccess" required>
+            <option value="provider">Only my healthcare provider</option>
+            <option value="family">My healthcare provider and family members</option>
+            <option value="anyone">Anyone with the link</option>
+          </select>
+        </div>
+        <button type="submit" class="btn">Save Settings</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>&copy; 2024 Agama Health All Rights Reserved. <a href="https://agamanetworks.com/" class="footer-link">Visit our website</a></p>
+</footer>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function updateGreeting() {
+      const infoData = JSON.parse(localStorage.getItem('infoData'));
+      const greetingElement = document.getElementById('greeting');
+      if (infoData && infoData.patientName) {
+        greetingElement.textContent = `Hello ${infoData.patientName}, Welcome to Your Health Journey!`;
+      } else {
+        greetingElement.textContent = 'Hello New Patient, Welcome to Your Health Journey!';
+      }
+    }
+
+    function populateFormData() {
+      const infoData = JSON.parse(localStorage.getItem('infoData'));
+      if (infoData) {
+        document.getElementById('patientName').value = infoData.patientName || '';
+        document.getElementById('patientEmail').value = infoData.patientEmail || '';
+        document.getElementById('patientPhone').value = infoData.patientPhone || '';
+        document.getElementById('patientDOB').value = infoData.patientDOB || '';
+        document.getElementById('patientAddress').value = infoData.patientAddress || '';
+        document.getElementById('insuranceProvider').value = infoData.insuranceProvider || '';
+        document.getElementById('policyNumber').value = infoData.policyNumber || '';
+        document.getElementById('policyHolderName').value = infoData.policyHolderName || '';
+      }
+    }
+
+    function loadAppointments() {
+      let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+      const appointmentSelector = document.getElementById('appointmentSelector');
+      appointmentSelector.innerHTML = '<option value="new">Add New Appointment</option>';
+      appointments.forEach((appointment, index) => {
+        let option = document.createElement('option');
+        option.value = index;
+        option.text = `Appointment on ${appointment.appointmentDate} with ${appointment.requestedPhysician}`;
+        appointmentSelector.add(option);
+      });
+
+      appointmentSelector.addEventListener('change', function() {
+        if (this.value === 'new') {
+          clearAppointmentForm();
+        } else {
+          populateAppointmentForm(appointments[this.value]);
+        }
+      });
+    }
+
+    function clearAppointmentForm() {
+      document.getElementById('appointmentType').value = '';
+      document.getElementById('appointmentDate').value = '';
+      document.getElementById('appointmentTime').value = '';
+      document.getElementById('requestedPhysician').value = '';
+    }
+
+    function populateAppointmentForm(appointment) {
+      document.getElementById('appointmentType').value = appointment.appointmentType;
+      document.getElementById('appointmentDate').value = appointment.appointmentDate;
+      document.getElementById('appointmentTime').value = appointment.appointmentTime;
+      document.getElementById('requestedPhysician').value = appointment.requestedPhysician;
+    }
+
+    function saveToLocalStorage(key, data) {
+      localStorage.setItem(key, JSON.stringify(data));
+      window.dispatchEvent(new Event('storage')); // Dispatch storage event for the current window
+    }
+
+    function addNotification(date, message) {
+      let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+      notifications.push({ date: date, message: message });
+      saveToLocalStorage('notifications', notifications);
+      loadNotifications();
+    }
+
+    function loadNotifications() {
+      const notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+      const container = document.getElementById('notificationsContainer');
+      container.innerHTML = ''; // Clear existing entries
+
+      notifications.forEach((notification, index) => {
+        const notificationDiv = document.createElement('div');
+        notificationDiv.classList.add('form-group');
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `notification${index}`);
+        label.textContent = `Notification on ${notification.date}`;
+        notificationDiv.appendChild(label);
+
+        const textarea = document.createElement('textarea');
+        textarea.id = `notification${index}`;
+        textarea.name = `notification${index}`;
+        textarea.rows = 4;
+        textarea.readOnly = true;
+        textarea.textContent = notification.message;
+        notificationDiv.appendChild(textarea);
+
+        container.appendChild(notificationDiv);
+      });
+    }
+
+    function loadJournalEntries() {
+      const journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      const container = document.getElementById('previousEntriesContainer');
+      container.innerHTML = ''; // Clear existing entries
+
+      journalEntries.forEach((entry, index) => {
+        const entryDiv = document.createElement('div');
+        entryDiv.classList.add('form-group');
+
+        const label = document.createElement('label');
+        label.setAttribute('for', `previousEntry${index}`);
+        label.textContent = `Entry on ${entry.journalDate}`;
+        entryDiv.appendChild(label);
+
+        const textarea = document.createElement('textarea');
+        textarea.id = `previousEntry${index}`;
+        textarea.name = `previousEntry${index}`;
+        textarea.rows = 4;
+        textarea.readOnly = true;
+        textarea.textContent = entry.journalEntry;
+        entryDiv.appendChild(textarea);
+
+        container.appendChild(entryDiv);
+      });
+    }
+
+    // Update greeting on page load
+    updateGreeting();
+
+    // Populate form data on page load
+    populateFormData();
+
+    // Load appointments on page load
+    loadAppointments();
+
+    // Load notifications on page load
+    loadNotifications();
+
+    // Load journal entries on page load
+    loadJournalEntries();
+
+    // Event listener for info form submission
+    document.getElementById('infoForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const infoData = {
+        patientName: document.getElementById('patientName').value,
+        patientEmail: document.getElementById('patientEmail').value,
+        patientPhone: document.getElementById('patientPhone').value,
+        patientDOB: document.getElementById('patientDOB').value,
+        patientAddress: document.getElementById('patientAddress').value,
+        insuranceProvider: document.getElementById('insuranceProvider').value,
+        policyNumber: document.getElementById('policyNumber').value,
+        policyHolderName: document.getElementById('policyHolderName').value
+      };
+      saveToLocalStorage('infoData', infoData);
+      alert('Information saved!');
+      updateGreeting(); // Update the greeting with the new name
+    });
+
+    // Event listener for appointment form submission
+    document.getElementById('appointmentForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+
+      const newAppointment = {
+        appointmentType: document.getElementById('appointmentType').value,
+        appointmentDate: document.getElementById('appointmentDate').value,
+        appointmentTime: document.getElementById('appointmentTime').value,
+        requestedPhysician: document.getElementById('requestedPhysician').value
+      };
+
+      const appointmentSelector = document.getElementById('appointmentSelector');
+
+      if (appointmentSelector.value === 'new') {
+        // Add a new appointment
+        appointments.push(newAppointment);
+      } else {
+        // Update the existing appointment
+        appointments[appointmentSelector.value] = newAppointment;
+      }
+
+      // Save the updated appointments array back to local storage
+      saveToLocalStorage('appointments', appointments);
+      alert('Appointment scheduled!');
+      addNotification(new Date().toISOString().split('T')[0], `Appointment scheduled for ${newAppointment.appointmentDate} with ${newAppointment.requestedPhysician}.`);
+
+      // Reload appointments to update the selector dropdown
+      loadAppointments();
+      appointmentSelector.value = 'new';
+
+      // Reset the form fields
+      clearAppointmentForm();
+    });
+
+    // Event listener for journal form submission
+    document.getElementById('journalForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      let journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+
+      const newJournalEntry = {
+        journalDate: document.getElementById('journalDate').value,
+        journalEntry: document.getElementById('journalEntry').value
+      };
+
+      journalEntries.push(newJournalEntry);
+      saveToLocalStorage('journalEntries', journalEntries);
+      alert('Journal entry saved!');
+
+      // Reset the form fields
+      document.getElementById('journalDate').value = '';
+      document.getElementById('journalEntry').value = '';
+
+      // Reload journal entries to include the new one
+      loadJournalEntries();
+    });
+
+    // Event listener for chat form submission
+    document.getElementById('chatForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const chatData = {
+        chatTopic: document.getElementById('chatTopic').value,
+        chatMessage: document.getElementById('chatMessage').value
+      };
+      saveToLocalStorage('chatData', chatData);
+      alert('Message sent!');
+    });
+
+    // Event listener for settings form submission
+    document.getElementById('settingsForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const settingsData = {
+        emrAccess: document.getElementById('emrAccess').value,
+        journalAccess: document.getElementById('journalAccess').value
+      };
+      saveToLocalStorage('settingsData', settingsData);
+      alert('Settings saved!');
+    });
+
+    // Collapsible sections script
+    var coll = document.getElementsByClassName("collapsible");
+    for (var i = 0; i < coll.length; i++) {
+      coll[i].addEventListener("click", function() {
+        this.classList.toggle("active");
+        var content = this.nextElementSibling;
+        if (content.style.display === "block") {
+          content.style.display = "none";
+          this.setAttribute("aria-expanded", "false");
+        } else {
+          content.style.display = "block";
+          this.setAttribute("aria-expanded", "true");
+        }
+      });
+    }
+  });
+</script>
+</body>
+
+</html>

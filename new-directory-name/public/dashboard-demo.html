@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Healthcare Dashboard</title>
+  <!-- Highcharts Core -->
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/highcharts-3d.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <script src="https://code.highcharts.com/modules/timeline.js"></script>
+  <!-- DataTables -->
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+  <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+  <style>
+    body {
+      background-color: #000000;
+      color: black;
+      font-family: Arial, sans-serif;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .container {
+      display: flex;
+      height: 100vh;
+    }
+
+    .left-panel {
+      flex: 0 0 20%;
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+    }
+
+    .left-panel button {
+      margin-bottom: 10px;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      background-color: #00b2cc;
+      color: #fff;
+      width: 100%;
+      text-align: left;
+      outline: none;
+      font-size: 1em;
+      border-radius: 5px;
+      box-shadow: none;
+    }
+
+    .left-panel button:hover {
+      background-color: rgba(0, 178, 204, 0.8);
+    }
+
+    .left-panel .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      border: 2px solid #444;
+      color: white;
+    }
+
+    .left-panel .chat-container input {
+      border: none;
+      padding: 10px;
+      background-color: #333;
+      color: white;
+    }
+
+    .main-panel {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .main-panel .chart-container {
+      flex: 1;
+      border: 2px solid #444;
+      margin-bottom: 10px;
+    }
+
+    .main-panel .chart-container:last-child {
+      margin-bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 40px;
+      font-size: 16px;
+      text-align: left;
+      color: white;
+    }
+
+    table th,
+    table td {
+      border: 1px solid #333;
+      padding: 8px;
+    }
+
+    table th {
+      background-color: #004080;
+      color: white;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #004080;
+    }
+
+    table tr:nth-child(odd) {
+      background-color: #003366;
+    }
+
+    table tr:hover {
+      background-color: #001f3f;
+    }
+
+    table.display tbody tr.shade-blue td {
+      background-color: #0066cc !important; /* Crisp blue */
+    }
+
+    table.display tbody tr td.category-preventative {
+      background-color: black !important; /* Black background */
+      color: white !important; /* White text */
+    }
+
+    table.display tbody tr:nth-child(odd) td {
+      background-color: black;
+    }
+
+    table.display tbody tr:nth-child(even) td {
+      background-color: black;
+    }
+
+    table.display tbody tr td {
+      color: white;
+    }
+
+    .chart-container {
+      margin-bottom: 40px;
+      border-bottom: 2px solid #444;
+      padding-bottom: 20px;
+      height: 675px; /* Further increased height to allow 1.5x more vertical space */
+    }
+
+    .expandable-content {
+      display: none;
+      padding: 10px;
+      margin-bottom: 10px;
+      background-color: #f1f1f1;
+      border: 1px solid #ccc;
+    }
+
+    .card {
+      background-color: #333;
+      border: 1px solid #444;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .card p {
+      margin: 5px 0;
+      color: #e0e0e0;
+    }
+
+    .card strong {
+      color: #00b2cc;
+    }
+  </style>
+</head>
+
+<body>
+<div class="container">
+  <div class="left-panel">
+    <button class="expandable-button">Vickie Moore</button>
+    <div class="expandable-content" id="vickieMooreContent">
+      <!-- Vickie Moore data will be shown here -->
+    </div>
+
+    <button class="expandable-button">Portal Alerts</button>
+    <div class="expandable-content" id="portalAlertsContent">
+      <!-- Portal Alerts data will be shown here -->
+    </div>
+
+    <button class="expandable-button">A.I Suggested</button>
+    <div class="expandable-content" id="aiSuggestedContent">
+      <!-- A.I Suggested data will be shown here -->
+    </div>
+    <div class="chat-container">
+      <div class="chat-box" id="chat-box" style="flex: 1; overflow-y: auto; padding: 10px;">
+        <!-- Chat messages will be appended here -->
+      </div>
+      <input type="text" id="chat-input" placeholder="Type a message...">
+    </div>
+  </div>
+  <div class="main-panel">
+    <div class="chart-container" id="vitalsChartContainer"></div>
+    <div class="chart-container" id="labResultsChartContainer"></div>
+    <div class="chart-container" id="timelineContainer"></div>
+    <div class="chart-container" id="medicationsContainer">
+      <h2 style="color:white">Medications</h2>
+      <table class="medicationsTable">
+        <thead>
+        <tr>
+          <th>Medication</th>
+          <th>Dosage</th>
+          <th>Frequency</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>Cholecalciferol (Vitamin D3)</td>
+          <td>25 mcg (1000 units)</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Omega-3 acid (Omega-3)</td>
+          <td>1 g capsule, four capsules (4000 mg total)</td>
+          <td>Daily</td>
+        </tr>
+        <tr>
+          <td>Multiple Vitamins-Iron</td>
+          <td>1 tablet</td>
+          <td>Daily</td>
+        </tr>
+        <tr>
+          <td>Niacin</td>
+          <td>500 mg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Progesterone</td>
+          <td>25 mg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Vitamin D3</td>
+          <td>125 mcg (5000 IU)</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Vitamin K</td>
+          <td>100 mcg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Chlorthalidone (Hygroton)</td>
+          <td>25 mg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Coenzyme Q-10</td>
+          <td>100 mg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Thyroid</td>
+          <td>48.75 mg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Tretinoin (Retin-A)</td>
+          <td>0.05% cream</td>
+          <td>Applied as prescribed</td>
+        </tr>
+        <tr>
+          <td>Ammonium Lactate (Lac-Hydrin)</td>
+          <td>12% lotion</td>
+          <td>Applied twice daily</td>
+        </tr>
+        <tr>
+          <td>Clonidine (Catapres)</td>
+          <td>0.1 mg</td>
+          <td>Twice daily as needed for hypertension</td>
+        </tr>
+        <tr>
+          <td>Levothyroxine (Synthroid, Levoxyl)</td>
+          <td>50 mcg</td>
+          <td>Once daily</td>
+        </tr>
+        <tr>
+          <td>Synthroid</td>
+          <td>25 mcg, 1.5 tablets</td>
+          <td>Daily</td>
+        </tr>
+        <tr>
+          <td>Synthroid</td>
+          <td>75 mcg</td>
+          <td>As prescribed</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="chart-container id=servicesContainer">
+      <h2 style="color:white">Referrals and Preventative Services</h2>
+      <table id="servicesTable" class="display">
+        <thead>
+        <tr>
+          <th>Category</th>
+          <th>Subcategory</th>
+          <th>Details</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="shade-blue">
+          <td>Referrals</td>
+          <td>Cardiology</td>
+          <td>Hypertension management. Regular follow-ups with a cardiologist are necessary to monitor and manage the condition.</td>
+        </tr>
+        <tr class="shade-blue">
+          <td>Referrals</td>
+          <td>Endocrinology</td>
+          <td>Consultation for hypothyroidism management. Regular thyroid function tests and adjustments to treatment as necessary.</td>
+        </tr>
+        <tr class="shade-blue">
+          <td>Referrals</td>
+          <td>Orthopedics/Rheumatology</td>
+          <td>Management of osteoporosis and osteopenia. Regular DEXA scans and follow-ups with a specialist.</td>
+        </tr>
+        <tr class="shade-blue">
+          <td>Referrals</td>
+          <td>Neurology</td>
+          <td>Management of idiopathic peripheral neuropathy and neuralgia. Specialist consultation for treatment options.</td>
+        </tr>
+        <tr class="shade-blue">
+          <td>Referrals</td>
+          <td>Oncology</td>
+          <td>Follow-ups for benign neoplasm of the cerebral meninges to monitor any potential changes.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Vaccinations</td>
+          <td>Ensure up to date with shingles, pneumococcal, and other age-appropriate vaccines.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Cancer Screenings</td>
+          <td>Regular mammograms and colorectal cancer screenings.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Cardiovascular Health</td>
+          <td>Regular monitoring of blood pressure and other cardiovascular health indicators. Lifestyle and dietary counseling to manage hypertension.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Bone Health</td>
+          <td>Regular DEXA scans to monitor bone density.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Routine Health Checks</td>
+          <td>Annual physical exams and Medicare Annual Wellness Visits.</td>
+        </tr>
+        <tr>
+          <td class="category-preventative">Preventative Services</td>
+          <td>Thyroid Function Tests</td>
+          <td>Regular tests to manage and adjust treatment for hypothyroidism.</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).ready(function () {
+    $('#servicesTable').DataTable();
+    $('#medicationsTable').DataTable();
+  });
+
+  $('#chat-input').on('keypress', function (e) {
+    if (e.which === 13) {
+      const message = $(this).val();
+      $(this).val('');
+      if (message.trim() !== '') {
+        $('#chat-box').append('<div><b>User:</b> ' + message + '</div>');
+        $('#chat-box').append('<div><b>AI:</b> ' + 'Processing request...' + '</div>');
+        $('#chat-box').scrollTop($('#chat-box')[0].scrollHeight);
+      }
+    }
+  });
+
+  Highcharts.chart('vitalsChartContainer', {
+    chart: {
+      type: 'column',
+      backgroundColor: '#000000',
+      options3d: {
+        enabled: true,
+        alpha: 0,
+        beta: 0,
+        depth: 40
+      }
+    },
+    title: {
+      text: '<b>Vitals with Trends</b>',
+      style: {
+        color: '#f0f0f0'
+      }
+    },
+    xAxis: {
+      categories: [
+        'Jan 2021', 'Mar 2021', 'May 2021', 'Sep 2021', 'Dec 2021',
+        'Mar 2022', 'Jun 2022', 'Sep 2022', 'Dec 2022', 'Mar 2023',
+        'Jun 2023', 'Sep 2023', 'Dec 2023', 'Mar 2024', 'Apr 2024'
+      ],
+      crosshair: false, // Turned off crosshair
+      labels: {
+        style: {
+          color: '#f0f0f0',
+          fontSize: '10px'
+        },
+        rotation: 0,
+        align: 'center'
+      },
+      gridLineWidth: 0
+    },
+    yAxis: [{
+      title: {
+        text: '<b>Value</b>',
+        style: {
+          fontWeight: 'bold',
+          color: '#f0f0f0'
+        }
+      },
+      labels: {
+        style: {
+          fontWeight: 'bold',
+          color: '#f0f0f0'
+        }
+      },
+      gridLineWidth: 0,
+      crosshair: false // Turned off crosshair
+    }, {
+      title: {
+        text: '<b>BMI</b>',
+        style: {
+          fontWeight: 'bold',
+          color: '#f0f0f0'
+        }
+      },
+      labels: {
+        style: {
+          fontWeight: 'bold',
+          color: '#f0f0f0'
+        }
+      },
+      opposite: true,
+      gridLineWidth: 0,
+      crosshair: false // Turned off crosshair
+    }],
+    legend: {
+      itemStyle: {
+        color: '#ffffff'
+      }
+    },
+    tooltip: {
+      shared: false,
+      useHTML: true,
+      headerFormat: '<small><b>{point.key}</b></small><br/>',
+      pointFormat: '<span style="color: {series.color}; background-color: {series.color};"><b>{series.name}</b></span>: <span style="text-align: right; background-color: {series.color};"><b>{point.y}</b></span>',
+      footerFormat: '</table>',
+      valueDecimals: 2,
+      style: {
+        color: '#000000',
+        backgroundColor: '#ffffff'
+      }
+    },
+    plotOptions: {
+      column: {
+        opacity: 0.7,
+        borderColor: '#000',
+        borderWidth: 6,
+        depth: 15,
+        states: {
+          select: {
+            color: '#00ff00',
+            borderColor: '#000000',
+            dashStyle: 'shortdot'
+          }
+        },
+        point: {
+          events: {
+            mouseOver: function () {
+              this.update({ color: Highcharts.color(this.series.color).setOpacity(1).get() });
+              const chart = this.series.chart;
+              const series = chart.series;
+              for (let i = 0; i < series.length; i++) {
+                if (series[i].name !== this.series.name) {
+                  series[i].update({ opacity: 1 }, false);
+                }
+              }
+              chart.redraw();
+            },
+            mouseOut: function () {
+              this.update({ color: Highcharts.color(this.series.color).setOpacity(0.9).get() });
+              const chart = this.series.chart;
+              const series = chart.series;
+              for (let i = 0; i < series.length; i++) {
+                series[i].update({ opacity: 0.9 }, false);
+              }
+              chart.redraw();
+            }
+          }
+        }
+      },
+      series: {
+        point: {
+          events: {
+            mouseOver: function () {
+              this.series.chart.update({
+                plotOptions: {
+                  series: {
+                    borderWidth: 0
+                  }
+                }
+              });
+            },
+            mouseOut: function () {
+              this.series.chart.update({
+                plotOptions: {
+                  series: {
+                    borderWidth: 0
+                  }
+                }
+              });
+            }
+          }
+        }
+      }
+    },
+    series: [{
+      name: 'Blood Pressure',
+      data: [
+        145, 142, 140, 143, 141,
+        144, 147, 143, 145, 153,
+        150, 148, 147, 146, 142
+      ],
+      color: '#FF6347',
+      tooltip: {
+        pointFormat: '<span style="color: #FF6347">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Pulse',
+      data: [
+        60, 62, 59, 61, 60,
+        63, 62, 61, 60, 61,
+        60, 59, 58, 58, 58
+      ],
+      color: '#7CFC00',
+      tooltip: {
+        pointFormat: '<span style="color: #7CFC00">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Temperature',
+      data: [
+        null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, null, null, null
+      ],
+      color: '#1E90FF',
+      tooltip: {
+        pointFormat: '<span style="color: #1E90FF">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Respiratory Rate',
+      data: [
+        16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16,
+        16, 16, 16, 16, 16
+      ],
+      color: '#FFFF00',
+      tooltip: {
+        pointFormat: '<span style="color: #FFFF00">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Oxygen Saturation',
+      data: [
+        null, null, null, null, null,
+        null, null, null, null, 99,
+        null, null, null, null, null
+      ],
+      color: '#FF1493',
+      tooltip: {
+        pointFormat: '<span style="color: #FF1493">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Weight',
+      data: [
+        68, 67.5, 67, 67.3, 67.5,
+        67, 67.2, 67, 67.4, 67.4,
+        67, 67.1, 67, 66.9, 66.7
+      ],
+      color: '#00CED1',
+      tooltip: {
+        pointFormat: '<span style="color: #00CED1">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'Height',
+      data: [
+        155, 155, 155, 155, 155,
+        155, 155, 155, 155, 155,
+        155, 155, 155, 154.9, 154.9
+      ],
+      visible: false,
+      color: '#9370DB',
+      tooltip: {
+        pointFormat: '<span style="color: #9370DB">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }, {
+      name: 'BMI (Body Mass Index)',
+      type: 'spline',
+      yAxis: 1,
+      data: [
+        28.3, 28.1, 28, 28.2, 28.1,
+        28.3, 28.3, 28.2, 28.3, 28.08,
+        28, 28.1, 28.08, 27.9, 27.78
+      ],
+      marker: {
+        enabled: true,
+        radius: 6,  // Increased size by 2x
+        fillColor: '#FF69B4'  // Changed to pink
+      },
+      lineWidth: 1,
+      color: '#FFFFFF', // Bright white
+      zIndex: 75, // Bring to front with higher zIndex
+      tooltip: {
+        pointFormat: '<span style="color: #FF69B4">{series.name}</span>: <b>{point.y}</b><br/>'
+      }
+    }]
+  });
+
+
+
+  Highcharts.chart('labResultsChartContainer', {
+    chart: {
+      type: 'column',
+      options3d: {
+        enabled: true,
+        alpha: 0,
+        beta: 0,
+        depth: 70
+      },
+      zoomType: 'xy',
+      backgroundColor: '#000000',
+    },
+    title: {
+      text: 'Labs with Trends',
+      style: {
+        color: '#FFFFFF'
+      }
+    },
+    xAxis: {
+      categories: [
+        '08/09/2021', '02/14/2022', '03/14/2022', '12/22/2022', '03/15/2023', '05/01/2024'
+      ],
+      labels: {
+        style: {
+          fontWeight: 'bold',
+          fontSize: '10px',
+          color: '#FFFFFF'
+        },
+        y: 30
+      },
+      lineColor: '#000000',
+      gridLineWidth: 0
+    },
+    yAxis: [{
+      title: {
+        text: 'Values'
+      },
+      labels: {
+        style: {
+          color: '#FFFFFF'
+        }
+      },
+      gridLineWidth: 0
+    }],
+    tooltip: {
+      shared: false,
+      pointFormat: '{series.name}: <b>{point.y} {point.tooltipUnit}</b><br/>',
+      backgroundColor: 'rgba(255, 255, 255, 0.85)',
+      borderColor: '#000000',
+      borderRadius: 1,
+      shadow: false
+    },
+    legend: {
+      layout: 'horizontal',
+      align: 'center',
+      verticalAlign: 'bottom',
+      itemStyle: {
+        fontWeight: 'bold',
+        color: '#FFFFFF'
+      }
+    },
+    plotOptions: {
+      column: {
+        depth: 25,
+        dataLabels: {
+          inside: true,
+          align: 'center',
+          verticalAlign: 'middle',
+          rotation: -90,
+          style: {
+            fontSize: '8px',
+            textOutline: 'none',
+            color: '#FFFFFF'
+          }
+        },
+        borderColor: '#000000',
+        borderWidth: 1,
+        opacity: 0.7
+      },
+      line: {
+        lineWidth: 3,
+        marker: {
+          enabled: true,
+          symbol: 'circle',
+          radius: 4,
+          lineWidth: 1,
+          lineColor: null
+        },
+        dataLabels: {
+          enabled: false
+        },
+        states: {
+          hover: {
+            enabled: true,
+            lineWidth: 4
+          }
+        },
+        zIndex: 10
+      },
+      scatter: {
+        marker: {
+          symbol: 'triangle',
+          radius: 8,
+          fillColor: '#FF1493',
+          lineColor: '#FF1493',
+          lineWidth: 2
+        },
+        states: {
+          hover: {
+            enabled: true,
+            lineWidth: 4
+          }
+        }
+      },
+      series: {
+        point: {
+          events: {
+            click: function () {
+              alert(this.series.name + ': ' + this.y + ' ' + this.tooltipUnit + '\n\n' + getRelevantAnalysis(this.series.name, this.y));
+            },
+            mouseOver: function () {
+              const chart = this.series.chart;
+              const series = chart.series;
+              for (let i = 0; i < series.length; i++) {
+                if (series[i].name !== this.series.name) {
+                  series[i].update({ opacity: 0.4 }, false);
+                }
+              }
+              chart.redraw();
+            },
+            mouseOut: function () {
+              const chart = this.series.chart;
+              const series = chart.series;
+              for (let i = 0; i < series.length; i++) {
+                series[i].update({ opacity: 1 }, false);
+              }
+              chart.redraw();
+            }
+          }
+        }
+      }
+    },
+    series: [{
+      name: 'Ferritin',
+      type: 'column',
+      yAxis: 0,
+      data: [{
+        y: 26.5,
+        tooltipUnit: 'ng/mL',
+        date: '08/09/2021'
+      },
+        {
+          y: 46.1,
+          tooltipUnit: 'ng/mL',
+          date: '02/14/2022'
+        },
+        {
+          y: 28.61,
+          tooltipUnit: 'ng/mL',
+          date: '03/14/2022'
+        },
+        {
+          y: 47.4,
+          tooltipUnit: 'ng/mL',
+          date: '12/22/2022'
+        },
+        {
+          y: 55.19,
+          tooltipUnit: 'ng/mL',
+          date: '05/01/2024'
+        }
+      ],
+      tooltip: {
+        valueSuffix: ' ng/mL'
+      },
+      color: '#FF4500'
+    },
+      {
+        name: 'Glucose',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 93,
+          tooltipUnit: 'mg/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 103,
+            tooltipUnit: 'mg/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mg/dL'
+        },
+        color: '#FFFF00',
+        zIndex: 10,
+        marker: {
+          symbol: 'circle',
+          fillColor: '#FFFF00',
+          lineColor: '#FFFF00'
+        }
+      },
+      {
+        name: 'Sodium',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 141,
+          tooltipUnit: 'mmol/L',
+          date: '02/14/2022'
+        },
+          {
+            y: 138,
+            tooltipUnit: 'mmol/L',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mmol/L'
+        },
+        color: '#1E90FF'
+      },
+      {
+        name: 'Potassium',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 4.1,
+          tooltipUnit: 'mmol/L',
+          date: '02/14/2022'
+        },
+          {
+            y: 4.1,
+            tooltipUnit: 'mmol/L',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mmol/L'
+        },
+        color: '#32CD32'
+      },
+      {
+        name: 'Neutrophils %',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 53.6,
+          tooltipUnit: '%',
+          date: '08/09/2021'
+        },
+          {
+            y: 51.0,
+            tooltipUnit: '%',
+            date: '02/14/2022'
+          },
+          {
+            y: 59.8,
+            tooltipUnit: '%',
+            date: '03/14/2022'
+          },
+          {
+            y: 64.3,
+            tooltipUnit: '%',
+            date: '03/15/2023'
+          },
+          {
+            y: 57.1,
+            tooltipUnit: '%',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#FF6347'
+      },
+      {
+        name: 'Lymphocytes %',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 37.9,
+          tooltipUnit: '%',
+          date: '08/09/2021'
+        },
+          {
+            y: 40.8,
+            tooltipUnit: '%',
+            date: '02/14/2022'
+          },
+          {
+            y: 31.6,
+            tooltipUnit: '%',
+            date: '03/14/2022'
+          },
+          {
+            y: 28.6,
+            tooltipUnit: '%',
+            date: '03/15/2023'
+          },
+          {
+            y: 31.3,
+            tooltipUnit: '%',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#7FFF00'
+      },
+      {
+        name: 'WBC',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 7.4,
+          tooltipUnit: 'x10^3/uL',
+          date: '02/14/2022'
+        },
+          {
+            y: 7.4,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/14/2022'
+          },
+          {
+            y: 7.3,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/15/2023'
+          },
+          {
+            y: 8.15,
+            tooltipUnit: 'x10^3/uL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#8A2BE2'
+      },
+      {
+        name: 'Neutrophils Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 2.8,
+          tooltipUnit: 'x10^3/uL',
+          date: '08/09/2021'
+        },
+          {
+            y: 3.2,
+            tooltipUnit: 'x10^3/uL',
+            date: '02/14/2022'
+          },
+          {
+            y: 4.5,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/14/2022'
+          },
+          {
+            y: 4.7,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/15/2023'
+          },
+          {
+            y: 4.65,
+            tooltipUnit: 'x10^3/uL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#FF8C00'
+      },
+      {
+        name: 'Lymphocytes Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 2.6,
+          tooltipUnit: 'x10^3/uL',
+          date: '02/14/2022'
+        },
+          {
+            y: 2.3,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/14/2022'
+          },
+          {
+            y: 2.1,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/15/2023'
+          },
+          {
+            y: 2.55,
+            tooltipUnit: 'x10^3/uL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#8B0000'
+      },
+      {
+        name: 'Mixed Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.5,
+          tooltipUnit: 'x10^3/uL',
+          date: '02/14/2022'
+        }, {
+          y: 0.6,
+          tooltipUnit: 'x10^3/uL',
+          date: '03/14/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#20B2AA'
+      },
+      {
+        name: 'Monocytes Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.86,
+          tooltipUnit: 'x10^3/uL',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#CD5C5C'
+      },
+      {
+        name: 'Eosinophils Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.06,
+          tooltipUnit: 'x10^3/uL',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#FFD700'
+      },
+      {
+        name: 'Basophil Absolute',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.04,
+          tooltipUnit: 'x10^3/uL',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#FF69B4'
+      },
+      {
+        name: 'Hemoglobin',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 15.5,
+          tooltipUnit: 'g/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 14.0,
+            tooltipUnit: 'g/dL',
+            date: '03/15/2023'
+          },
+          {
+            y: 14.9,
+            tooltipUnit: 'g/dL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' g/dL'
+        },
+        color: '#DC143C'
+      },
+      {
+        name: 'Hematocrit',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 44.3,
+          tooltipUnit: '%',
+          date: '02/14/2022'
+        },
+          {
+            y: 40.4,
+            tooltipUnit: '%',
+            date: '03/15/2023'
+          },
+          {
+            y: 40.8,
+            tooltipUnit: '%',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#FF1493'
+      },
+      {
+        name: 'MCV',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 96.3,
+          tooltipUnit: 'fL',
+          date: '02/14/2022'
+        },
+          {
+            y: 98.8,
+            tooltipUnit: 'fL',
+            date: '03/14/2022'
+          },
+          {
+            y: 98.8,
+            tooltipUnit: 'fL',
+            date: '03/15/2023'
+          },
+          {
+            y: 95.1,
+            tooltipUnit: 'fL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' fL'
+        },
+        color: '#4B0082'
+      },
+      {
+        name: 'MCH',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 33.7,
+          tooltipUnit: 'pg',
+          date: '02/14/2022'
+        },
+          {
+            y: 34.2,
+            tooltipUnit: 'pg',
+            date: '03/14/2022'
+          },
+          {
+            y: 34.2,
+            tooltipUnit: 'pg',
+            date: '03/15/2023'
+          },
+          {
+            y: 34.7,
+            tooltipUnit: 'pg',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' pg'
+        },
+        color: '#800080'
+      },
+      {
+        name: 'MCHC',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 35.0,
+          tooltipUnit: 'g/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 34.7,
+            tooltipUnit: 'g/dL',
+            date: '03/14/2022'
+          },
+          {
+            y: 34.7,
+            tooltipUnit: 'g/dL',
+            date: '03/15/2023'
+          },
+          {
+            y: 36.5,
+            tooltipUnit: 'g/dL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' g/dL'
+        },
+        color: '#00FFFF'
+      },
+      {
+        name: 'RDW',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 46.3,
+          tooltipUnit: '%',
+          date: '02/14/2022'
+        },
+          {
+            y: 12.8,
+            tooltipUnit: '%',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#00FF00'
+      },
+      {
+        name: 'Platelet Count',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 290,
+          tooltipUnit: 'x10^3/uL',
+          date: '02/14/2022'
+        },
+          {
+            y: 332,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/14/2022'
+          },
+          {
+            y: 332,
+            tooltipUnit: 'x10^3/uL',
+            date: '03/15/2023'
+          },
+          {
+            y: 232,
+            tooltipUnit: 'x10^3/uL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' x10^3/uL'
+        },
+        color: '#FF00FF',
+        visible: false
+      },
+      {
+        name: 'MPV',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 8.0,
+          tooltipUnit: 'fL',
+          date: '02/14/2022'
+        },
+          {
+            y: 8.0,
+            tooltipUnit: 'fL',
+            date: '03/14/2022'
+          },
+          {
+            y: 8.0,
+            tooltipUnit: 'fL',
+            date: '03/15/2023'
+          },
+          {
+            y: 8.2,
+            tooltipUnit: 'fL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' fL'
+        },
+        color: '#4682B4'
+      },
+      {
+        name: 'Chloride',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 99,
+          tooltipUnit: 'mmol/L',
+          date: '02/14/2022'
+        },
+          {
+            y: 97,
+            tooltipUnit: 'mmol/L',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mmol/L'
+        },
+        color: '#FF6347'
+      },
+      {
+        name: 'Carbon Dioxide',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 29,
+          tooltipUnit: 'mmol/L',
+          date: '02/14/2022'
+        },
+          {
+            y: 29,
+            tooltipUnit: 'mmol/L',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mmol/L'
+        },
+        color: '#7FFF00'
+      },
+      {
+        name: 'BUN',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 18,
+          tooltipUnit: 'mg/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 17,
+            tooltipUnit: 'mg/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mg/dL'
+        },
+        color: '#8A2BE2'
+      },
+      {
+        name: 'Creatinine',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.6,
+          tooltipUnit: 'mg/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 0.7,
+            tooltipUnit: 'mg/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mg/dL'
+        },
+        color: '#FF8C00'
+      },
+      {
+        name: 'Calcium',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 9.8,
+          tooltipUnit: 'mg/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 10.2,
+            tooltipUnit: 'mg/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' mg/dL'
+        },
+        color: '#8B0000'
+      },
+      {
+        name: 'Protein, Total',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 6.8,
+          tooltipUnit: 'g/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 6.7,
+            tooltipUnit: 'g/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' g/dL'
+        },
+        color: '#20B2AA'
+      },
+      {
+        name: 'Albumin',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 4.7,
+          tooltipUnit: 'g/dL',
+          date: '02/14/2022'
+        },
+          {
+            y: 4.4,
+            tooltipUnit: 'g/dL',
+            date: '12/22/2022'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' g/dL'
+        },
+        color: '#CD5C5C'
+      },
+      {
+        name: 'Bilirubin, Total',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 0.7,
+          tooltipUnit: 'mg/dL',
+          date: '12/22/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' mg/dL'
+        },
+        color: '#FFD700'
+      },
+      {
+        name: 'Alkaline Phosphatase',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 110,
+          tooltipUnit: 'Units/L',
+          date: '12/22/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' Units/L'
+        },
+        color: '#FF69B4'
+      },
+      {
+        name: 'AST',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 24,
+          tooltipUnit: 'Units/L',
+          date: '12/22/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' Units/L'
+        },
+        color: '#DC143C'
+      },
+      {
+        name: 'ALT',
+        type: 'column',
+        yAxis: 0,
+        data: [{
+          y: 24,
+          tooltipUnit: 'Units/L',
+          date: '12/22/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' Units/L'
+        },
+        color: '#FF1493'
+      },
+      {
+        name: 'GFR (CKD-EPI)',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 93,
+          tooltipUnit: 'mL/min/1.73 m²',
+          date: '12/22/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' mL/min/1.73 m²'
+        },
+        color: '#4B0082'
+      },
+      {
+        name: 'RBC',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 4.09,
+          tooltipUnit: '10^6/uL',
+          date: '03/15/2023'
+        },
+          {
+            y: 4.29,
+            tooltipUnit: '10^6/uL',
+            date: '05/01/2024'
+          }
+        ],
+        tooltip: {
+          valueSuffix: ' 10^6/uL'
+        },
+        color: '#800080'
+      },
+      {
+        name: 'Monocytes %',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 10.6,
+          tooltipUnit: '%',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#00FFFF'
+      },
+      {
+        name: 'Eosinophils %',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 0.7,
+          tooltipUnit: '%',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#00FF00'
+      },
+      {
+        name: 'Basophils %',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 0.2,
+          tooltipUnit: '%',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#FF00FF'
+      },
+      {
+        name: 'TSH',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 4.26,
+          tooltipUnit: 'microInter.Units/mL',
+          date: '07/27/2022'
+        }],
+        tooltip: {
+          valueSuffix: ' microInter.Units/mL'
+        },
+        color: '#4682B4'
+      },
+      {
+        name: 'Iron Saturation',
+        type: 'line',
+        yAxis: 0,
+        data: [{
+          y: 47,
+          tooltipUnit: '%',
+          date: '05/01/2024'
+        }],
+        tooltip: {
+          valueSuffix: ' %'
+        },
+        color: '#FF4500'
+      }
+    ]
+  });
+
+  Highcharts.chart('timelineContainer', {
+    chart: {
+      type: 'timeline',
+      backgroundColor: '#000000',
+      options3d: {
+        enabled: true,
+        alpha: 3,
+        beta: -25,
+        depth: 100
+      }
+    },
+    title: {
+      text: 'Health Events Timeline',
+      style: {
+        color: '#ffffff',
+        fontSize: '20px',
+        fontWeight: 'bold'
+      }
+    },
+    subtitle: {
+      text: 'Jan 2021 - May 2024',
+      style: {
+        color: '#ffffff',
+        fontWeight: 'bold',
+        textAlign: 'center'
+      }
+    },
+    xAxis: {
+      visible: false
+    },
+    yAxis: {
+      gridLineColor: 'transparent',
+      labels: {
+        enabled: false
+      },
+      title: {
+        text: null
+      }
+    },
+    legend: {
+      enabled: false
+    },
+    plotOptions: {
+      series: {
+        dataLabels: {
+          connectorColor: 'silver',
+          style: {
+            color: '#ffffff',
+            textOutline: 'none'
+          },
+          backgroundColor: 'transparent',
+          borderColor: 'transparent'
+        },
+        pointWidth: 0,
+        borderColor: 'transparent',
+        depth: 0,
+        events: {
+          mouseOver: function () {
+            this.update({
+              color: Highcharts.color(this.color).brighten(0.3).get()
+            });
+          },
+          mouseOut: function () {
+            this.update({
+              color: Highcharts.color(this.color).brighten(-0.3).get()
+            });
+          }
+        }
+      }
+    },
+    series: [{
+      name: 'Medical Events and Conditions',
+      data: [{
+        name: 'COVID-19 Infection',
+        date: '2022-03-01',
+        color: '#00FF00',
+        description: 'Documented encounter in February 2022 indicating symptoms associated with COVID-19.'
+      }, {
+        name: 'Hypertension (unspecified type)',
+        date: '2024-04-30',
+        color: '#FF00FF',
+        description: 'Diagnosed during a cardiovascular evaluation in 2024.'
+      }, {
+        name: 'Osteoporosis',
+        date: '2022-10-06',
+        color: '#00FFFF',
+        description: 'Diagnosed with subsequent management and medication adjustments.'
+      }, {
+        name: 'Hypothyroidism',
+        date: '2022-08-03',
+        color: '#FFFF00',
+        description: 'Documented and treated with medications starting in August 2022.'
+      }, {
+        name: 'Left Lower Quadrant Pain',
+        date: '2022-08-01',
+        color: '#FF4500',
+        description: 'Noted in encounters in August and December 2022.'
+      }, {
+        name: 'Thoracic Spine Pain',
+        date: '2023-04-01',
+        color: '#ADFF2F',
+        description: 'Increase in thoracic spine pain documented in 2023 and 2024.'
+      }, {
+        name: 'Hypertension (unspecified type)',
+        date: '2024-05-11',
+        color: '#FF00FF',
+        description: 'Continual management documented in May 2024.'
+      }, {
+        name: 'COVID-19 Vaccination',
+        date: '2021-12-31',
+        color: '#00FF7F',
+        description: 'Completed COVID-19 vaccination series in 2021.'
+      }, {
+        name: 'Hypothyroidism Follow-up',
+        date: '2024-03-20',
+        color: '#FFD700',
+        description: 'Regular TSH level monitoring: last recorded in March 2024.'
+      }, {
+        name: 'Osteoporosis Follow-up',
+        date: '2023-04-18',
+        color: '#8A2BE2',
+        description: 'Regular bone density scan conducted in April 2023.'
+      }, {
+        name: 'Hyperlipidemia Follow-up',
+        date: '2024-03-20',
+        color: '#DC143C',
+        description: 'Regular lipid profile conducted in March 2024.'
+      }],
+      dataLabels: {
+        enabled: true,
+        allowOverlap: false,
+        format: '<span style="color: {point.color}">{point.name}</span><br/><span style="color: #ffffff">{point.date}</span>',
+        style: {
+          color: '#ffffff',
+          textOutline: 'none'
+        }
+      },
+      marker: {
+        symbol: 'circle',
+        lineWidth: 0
+      },
+      point: {
+        events: {
+          click: function () {
+            alert(this.options.description);
+          }
+        }
+      }
+    }]
+  });
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function loadVickieMooreData() {
+      const infoData = JSON.parse(localStorage.getItem('infoData'));
+      const contentElement = document.getElementById('vickieMooreContent');
+      if (infoData) {
+        contentElement.innerHTML = `
+                <div class="card">
+                    <p><strong>Name:</strong> ${infoData.patientName}</p>
+                    <p><strong>Email:</strong> ${infoData.patientEmail}</p>
+                    <p><strong>Phone:</strong> ${infoData.patientPhone}</p>
+                    <p><strong>Date of Birth:</strong> ${infoData.patientDOB}</p>
+                    <p><strong>Address:</strong> ${infoData.patientAddress}</p>
+                    <p><strong>Insurance Provider:</strong> ${infoData.insuranceProvider}</p>
+                    <p><strong>Policy Number:</strong> ${infoData.policyNumber}</p>
+                    <p><strong>Policy Holder Name:</strong> ${infoData.policyHolderName}</p>
+                </div>
+            `;
+      } else {
+        contentElement.innerHTML = '<p>No patient information available.</p>';
+      }
+    }
+
+    function loadPortalAlertsData() {
+      const appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+      const journalEntries = JSON.parse(localStorage.getItem('journalEntries')) || [];
+      const contentElement = document.getElementById('portalAlertsContent');
+
+      let contentHtml = '<h3>Appointments</h3>';
+      if (appointments.length > 0) {
+        appointments.forEach((appointment, index) => {
+          contentHtml += `
+                    <div class="card">
+                        <p><strong>Appointment ${index + 1}:</strong></p>
+                        <p><strong>Type:</strong> ${appointment.appointmentType}</p>
+                        <p><strong>Date:</strong> ${appointment.appointmentDate}</p>
+                        <p><strong>Time:</strong> ${appointment.appointmentTime}</p>
+                        <p><strong>Physician:</strong> ${appointment.requestedPhysician}</p>
+                    </div>
+                `;
+        });
+      } else {
+        contentHtml += '<p>No appointments available.</p>';
+      }
+
+      contentHtml += '<h3>Journal Entries</h3>';
+      if (journalEntries.length > 0) {
+        journalEntries.forEach((entry, index) => {
+          contentHtml += `
+                    <div class="card">
+                        <p><strong>Entry ${index + 1}:</strong></p>
+                        <p><strong>Date:</strong> ${entry.journalDate}</p>
+                        <p><strong>Entry:</strong> ${entry.journalEntry}</p>
+                    </div>
+                `;
+        });
+      } else {
+        contentHtml += '<p>No journal entries available.</p>';
+      }
+
+      contentElement.innerHTML = contentHtml;
+    }
+
+    // Initial load of data
+    loadVickieMooreData();
+    loadPortalAlertsData();
+
+    // Event listener for storage changes
+    window.addEventListener('storage', function(event) {
+      if (event.key === 'infoData') {
+        loadVickieMooreData();
+      } else if (event.key === 'appointments' || event.key === 'journalEntries') {
+        loadPortalAlertsData();
+      }
+    });
+
+    const buttons = document.querySelectorAll('.expandable-button');
+    buttons.forEach(button => {
+      button.addEventListener('click', function() {
+        const content = this.nextElementSibling;
+        if (content.style.display === 'block') {
+          content.style.display = 'none';
+        } else {
+          content.style.display = 'block';
+          if (this.textContent.trim() === 'Vickie Moore') {
+            loadVickieMooreData();
+          } else if (this.textContent.trim() === 'Portal Alerts') {
+            loadPortalAlertsData();
+          }
+        }
+      });
+    });
+  });
+
+
+
+
+</script>
+</body>
+
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chart Frame</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.130.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+<!--canvas id="chart" width="400" height="400"></canvas-->
+<div id="chart" width="400" height="400"></div>
+<div id="my_dataviz"></div>
+<script>
+    window.addEventListener('message', (event) => {
+        if (event.data.type === 'execute') {
+            //const ctx = document.getElementById('chart').getContext('2d');
+            // Execute the JavaScript code directly
+            console.log('executing');
+            try {
+                eval(event.data.code);
+            } catch (error) {
+                console.error('Error evaluating code:', error);
+            }
+
+        }
+    }, false);
+</script>
+</body>
+</html>
