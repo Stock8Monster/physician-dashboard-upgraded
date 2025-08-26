@@ -3,12 +3,14 @@ import { Grommet } from 'grommet';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AppBar from './components/AppBar';
 import Dashboard from './pages/Dashboard';
+import DashboardEnhanced from './pages/Dashboard-Enhanced';
 import Account from './pages/Account';
 import NotFound from './pages/NotFound';
 import Login from './components/Login';
 import AdminPage from './components/AdminPage';
 import AgamaPatientPortal from './pages/AgamaPatientPortal';
 import ConsultList from './components/ConsultList'; // Import the new ConsultList component
+import ConsultListDynamic from './components/ConsultListDynamic'; // Dynamic version with AI features
 import './styles/global.css';
 import { ResponsiveProvider } from './contexts/ResponsiveContext';
 
@@ -64,7 +66,7 @@ function App() {
                         path="/"
                         element={
                             isAuth ? (
-                                <ConsultList /> // Show ConsultList if authenticated
+                                <ConsultListDynamic /> // Show Dynamic ConsultList with AI features
                             ) : (
                                 <Navigate to="/login" />
                             )
@@ -83,6 +85,20 @@ function App() {
                         element={
                             isAuth ? (
                                 <Dashboard
+                                    popups={popups} removePopup={removePopup} addPopup={addPopup} removePopupByType={removePopupByType}
+                                />
+                            ) : (
+                                <Navigate to="/login" />
+                            )
+                        }
+                    />
+
+                    {/* Enhanced Dashboard Route with Revolutionary AI Features */}
+                    <Route
+                        path="/dashboard-ai"
+                        element={
+                            isAuth ? (
+                                <DashboardEnhanced
                                     popups={popups} removePopup={removePopup} addPopup={addPopup} removePopupByType={removePopupByType}
                                 />
                             ) : (

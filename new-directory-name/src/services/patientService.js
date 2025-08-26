@@ -1,7 +1,9 @@
 import axios from 'axios';
+import mockPatients from '../data/mockPatients';
 
 const API_BASE_URL = 'https://qft.agamanetworks.com/create-patient-record';
 const API_KEY = 'qrf-poc-123456-key';
+const USE_MOCK_DATA = true; // Toggle this to use mock data when API is unavailable
 
 // Create an Axios instance with default headers
 const axiosInstance = axios.create({
@@ -13,6 +15,12 @@ const axiosInstance = axios.create({
 });
 
 const listPatientsWithCharts = async () => {
+    // Use mock data when API is unavailable
+    if (USE_MOCK_DATA) {
+        console.log(`Using mock data: Found ${mockPatients.length} patients`);
+        return mockPatients;
+    }
+    
     try {
         // Fetch all patients
         const response = await axiosInstance.post('', {
@@ -51,11 +59,19 @@ const listPatientsWithCharts = async () => {
         return patientsWithCharts;
     } catch (error) {
         console.error('Error listing patients with charts:', error);
-        throw error;
+        // Fallback to mock data on error
+        console.log('Falling back to mock data');
+        return mockPatients;
     }
 };
 
 const getPatientDetails = async (patientId) => {
+    // Use mock data when API is unavailable
+    if (USE_MOCK_DATA) {
+        const patient = mockPatients.find(p => p.Key === patientId);
+        return patient ? patient.Record : null;
+    }
+    
     try {
         const response = await axiosInstance.get(`/patients/${patientId}`);
         return response.data;
